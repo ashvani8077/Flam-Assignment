@@ -67,22 +67,23 @@ const MonthView = ({ currentMonth, events, onDayClick, onEventClick, onEventDrop
         <div
           key={day}
           ref={drop}
-          className={`h-14 sm:h-16 md:h-20 flex flex-col items-center justify-center border rounded cursor-pointer select-none transition-colors
+          className={`h-20 sm:h-24 flex flex-col items-center justify-start border border-blue-100 rounded-xl bg-white/70 shadow-sm cursor-pointer select-none transition-all duration-200 mt-1 pt-2
             text-xs sm:text-base
-            ${isCurrentMonth ? 'bg-white' : 'bg-gray-100 text-gray-400'}
-            ${isToday ? 'border-blue-500 border-2' : ''}
-            ${isOver && canDrop ? 'ring-2 ring-blue-400' : ''}
+            ${isCurrentMonth ? 'text-blue-700' : 'bg-blue-50/80 text-blue-300'}
+            ${isToday ? 'border-2 border-blue-400 ring-2 ring-blue-300' : ''}
+            ${isOver && canDrop ? 'ring-2 ring-blue-300' : ''}
+            hover:scale-105 hover:ring-2 hover:ring-blue-200
           `}
           onClick={() => dayEvents.length > 0 ? onEventClick(day, dayEvents) : onDayClick(day)}
         >
-          <span>{formattedDate}</span>
+          <span className="font-bold mb-1 drop-shadow-sm">{formattedDate}</span>
           {dayEvents.length > 0 && (
-            <div className="flex gap-0.5 mt-1 flex-wrap justify-center items-center">
+            <div className="flex gap-1 mt-1 flex-wrap justify-center items-center">
               {dayEvents.slice(0, 3).map((ev, idx) => (
-                <DraggableEventDot key={ev.id} event={ev} onEventClick={() => onEventClick(day, dayEvents)} />
+                <span key={ev.id} className="w-3 h-3 rounded-full border-2 border-white/80 shadow-sm" style={{ background: ev.color, opacity: 0.7 }}></span>
               ))}
               {dayEvents.length > 3 && (
-                <span className="text-xs text-gray-500 ml-1">+{dayEvents.length - 3}</span>
+                <span className="text-xs text-blue-400 ml-1">+{dayEvents.length - 3}</span>
               )}
             </div>
           )}
@@ -91,7 +92,7 @@ const MonthView = ({ currentMonth, events, onDayClick, onEventClick, onEventDrop
       day = addDays(day, 1);
     }
     rows.push(
-      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-0.5 sm:mb-1" key={day}>
+      <div className="grid grid-cols-7 gap-2 sm:gap-4 mb-2 sm:mb-3" key={day}>
         {days}
       </div>
     );

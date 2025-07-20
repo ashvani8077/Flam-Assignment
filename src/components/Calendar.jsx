@@ -195,73 +195,108 @@ const Calendar = () => {
   );
 
   return (
-    <div className="max-w-xl mx-auto mt-8 p-4 bg-white rounded shadow">
-      {/* Search and filter UI */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-4 items-center">
-        <input
-          type="text"
-          placeholder="Search events..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="border rounded px-2 py-1 flex-1"
-        />
-        <select
-          value={colorFilter}
-          onChange={e => setColorFilter(e.target.value)}
-          className="border rounded px-2 py-1"
-        >
-          <option value="">All Colors</option>
-          {eventColors.map(color => (
-            <option key={color} value={color} style={{ color }}>{color}</option>
-          ))}
-        </select>
-        <button
-          className={`px-3 py-1 rounded border ${viewType === 'month' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-          onClick={() => setViewType('month')}
-        >
-          Monthly
-        </button>
-        <button
-          className={`px-3 py-1 rounded border ${viewType === 'week' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-          onClick={() => setViewType('week')}
-        >
-          Weekly
-        </button>
+    <div>
+      {/* Header with gradient title and subtitle */}
+      <div className="flex flex-col items-center mb-8">
+        <h1 className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent drop-shadow-lg tracking-tight mb-2">
+          Event Calendar
+        </h1>
+        <p className="text-lg text-white/80 font-medium mb-4">Manage your schedule with style</p>
+        <div className="w-full flex justify-center">
+          <input
+            type="text"
+            placeholder="Search events..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full max-w-md bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+          />
+        </div>
       </div>
-      {renderHeader()}
-      {viewType === 'month' ? (
-        <MonthView
-          currentMonth={currentMonth}
-          events={expandRecurringEvents(filteredEvents, currentMonth)}
-          onDayClick={handleDayClick}
-          onEventClick={handleEventClick}
-          onEventDrop={handleEventDrop}
+      {/* Calendar container */}
+      <div className="bg-white/10 rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            className="px-3 py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow hover:scale-105 transition"
+            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          >
+            &#8592;
+          </button>
+          <div className="font-extrabold text-2xl sm:text-3xl text-white tracking-wide drop-shadow">
+            {format(currentMonth, 'MMMM yyyy')}
+          </div>
+          <button
+            className="px-3 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow hover:scale-105 transition"
+            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          >
+            &#8594;
+          </button>
+          <button
+            className="ml-4 px-5 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold shadow-lg hover:scale-105 transition flex items-center gap-2"
+            onClick={() => { setIsModalOpen(true); setSelectedDate(new Date()); setEditMode(false); setSelectedEvent(null); }}
+          >
+            <span className="text-xl font-bold">+</span> Add Event
+          </button>
+        </div>
+        {/* Search and filter UI */}
+        <div className="flex flex-col sm:flex-row gap-2 mb-4 items-center">
+          <select
+            value={colorFilter}
+            onChange={e => setColorFilter(e.target.value)}
+            className="border rounded px-2 py-1"
+          >
+            <option value="">All Colors</option>
+            {eventColors.map(color => (
+              <option key={color} value={color} style={{ color }}>{color}</option>
+            ))}
+          </select>
+          <button
+            className={`px-3 py-1 rounded border ${viewType === 'month' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            onClick={() => setViewType('month')}
+          >
+            Monthly
+          </button>
+          <button
+            className={`px-3 py-1 rounded border ${viewType === 'week' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+            onClick={() => setViewType('week')}
+          >
+            Weekly
+          </button>
+        </div>
+        {renderHeader()}
+        {viewType === 'month' ? (
+          <MonthView
+            currentMonth={currentMonth}
+            events={expandRecurringEvents(filteredEvents, currentMonth)}
+            onDayClick={handleDayClick}
+            onEventClick={handleEventClick}
+            onEventDrop={handleEventDrop}
+          />
+        ) : (
+          <WeekView
+            weekStartDate={weekStartDate}
+            events={expandRecurringEvents(filteredEvents, currentMonth)}
+            onDayClick={handleDayClick}
+            onEventClick={handleEventClick}
+            onEventDrop={handleEventDrop}
+          />
+        )}
+        <EventModal
+          open={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setEditMode(false); setModalError(''); }}
+          onSave={handleAddEvent}
+          selectedDate={editMode && selectedEvent ? new Date(selectedEvent.date) : selectedDate}
+          {...(editMode && selectedEvent ? { key: selectedEvent.id } : {})}
+          {...(editMode && selectedEvent ? { selectedEvent } : {})}
+          error={modalError}
         />
-      ) : (
-        <WeekView
-          weekStartDate={weekStartDate}
-          events={expandRecurringEvents(filteredEvents, currentMonth)}
-          onDayClick={handleDayClick}
-          onEventClick={handleEventClick}
-          onEventDrop={handleEventDrop}
+        <EventDetailsModal
+          open={detailsModalOpen}
+          onClose={() => { setDetailsModalOpen(false); setSelectedEvent(null); setSelectedDayEvents(null); }}
+          event={selectedDayEvents || selectedEvent}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
         />
-      )}
-      <EventModal
-        open={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditMode(false); setModalError(''); }}
-        onSave={handleAddEvent}
-        selectedDate={editMode && selectedEvent ? new Date(selectedEvent.date) : selectedDate}
-        {...(editMode && selectedEvent ? { key: selectedEvent.id } : {})}
-        {...(editMode && selectedEvent ? { selectedEvent } : {})}
-        error={modalError}
-      />
-      <EventDetailsModal
-        open={detailsModalOpen}
-        onClose={() => { setDetailsModalOpen(false); setSelectedEvent(null); setSelectedDayEvents(null); }}
-        event={selectedDayEvents || selectedEvent}
-        onEdit={handleEditEvent}
-        onDelete={handleDeleteEvent}
-      />
+      </div>
     </div>
   );
 };
