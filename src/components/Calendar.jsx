@@ -17,6 +17,7 @@ const Calendar = () => {
   const [search, setSearch] = useState('');
   const [colorFilter, setColorFilter] = useState('');
   const [viewType, setViewType] = useState('month');
+  const [selectedDayEvents, setSelectedDayEvents] = useState(null);
 
   // Load events from localStorage on mount
   useEffect(() => {
@@ -103,20 +104,30 @@ const Calendar = () => {
   };
 
   const handleEventClick = (date, dayEvents) => {
-    setSelectedEvent(dayEvents[0]); // For now, show first event if multiple
-    setDetailsModalOpen(true);
+    if (dayEvents.length > 1) {
+      setSelectedDayEvents(dayEvents);
+      setSelectedEvent(null);
+      setDetailsModalOpen(true);
+    } else {
+      setSelectedEvent(dayEvents[0]);
+      setSelectedDayEvents(null);
+      setDetailsModalOpen(true);
+    }
   };
 
-  const handleEditEvent = () => {
+  const handleEditEvent = (ev) => {
     setEditMode(true);
     setIsModalOpen(true);
     setDetailsModalOpen(false);
+    setSelectedEvent(ev);
+    setSelectedDayEvents(null);
   };
 
-  const handleDeleteEvent = () => {
-    setEvents((prev) => prev.filter(ev => ev.id !== selectedEvent.id));
+  const handleDeleteEvent = (ev) => {
+    setEvents((prev) => prev.filter(e => e.id !== ev.id));
     setDetailsModalOpen(false);
     setSelectedEvent(null);
+    setSelectedDayEvents(null);
   };
 
   const isConflict = (eventData, ignoreId = null) => {
@@ -246,8 +257,8 @@ const Calendar = () => {
       />
       <EventDetailsModal
         open={detailsModalOpen}
-        onClose={() => setDetailsModalOpen(false)}
-        event={selectedEvent}
+        onClose={() => { setDetailsModalOpen(false); setSelectedEvent(null); setSelectedDayEvents(null); }}
+        event={selectedDayEvents || selectedEvent}
         onEdit={handleEditEvent}
         onDelete={handleDeleteEvent}
       />

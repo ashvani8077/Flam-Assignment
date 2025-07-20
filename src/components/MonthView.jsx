@@ -77,7 +77,14 @@ const MonthView = ({ currentMonth, events, onDayClick, onEventClick, onEventDrop
         >
           <span>{formattedDate}</span>
           {dayEvents.length > 0 && (
-            <DraggableEventDot event={dayEvents[0]} onEventClick={() => onEventClick(day, dayEvents)} />
+            <div className="flex gap-0.5 mt-1 flex-wrap justify-center items-center">
+              {dayEvents.slice(0, 3).map((ev, idx) => (
+                <DraggableEventDot key={ev.id} event={ev} onEventClick={() => onEventClick(day, dayEvents)} />
+              ))}
+              {dayEvents.length > 3 && (
+                <span className="text-xs text-gray-500 ml-1">+{dayEvents.length - 3}</span>
+              )}
+            </div>
           )}
         </div>
       );
