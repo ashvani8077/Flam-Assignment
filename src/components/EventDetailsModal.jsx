@@ -1,64 +1,85 @@
-import React from 'react';
-import { format } from 'date-fns';
+"use client"
+import React from "react"
+import { Calendar as CalendarIcon, Clock, Tag, Repeat, Edit, Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useEvents } from "./event-context"
+import { format, parse } from "date-fns"
+import { motion } from "framer-motion"
 
-const EventDetailsModal = ({ open, onClose, event, onEdit, onDelete }) => {
-  if (!open || !event) return null;
+export function EventDetailsModal({ isOpen, onClose, event, onEdit }) {
+  const { dispatch } = useEvents()
 
-  // If event is an array, show all events for the day
-  if (Array.isArray(event)) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-        <div className="bg-white p-4 sm:p-6 rounded shadow-lg w-full max-w-xs sm:max-w-sm mx-2">
-          <div className="mb-4 font-semibold">Events for {event[0]?.date ? format(new Date(event[0].date), 'PPP') : ''}</div>
-          <div className="space-y-4 max-h-80 overflow-y-auto">
-            {event.map(ev => (
-              <div key={ev.id} className="border-b pb-2 mb-2 last:border-b-0 last:pb-0 last:mb-0">
-                <div className="flex items-center gap-2 font-semibold">
-                  <span className="inline-block w-3 h-3 rounded-full" style={{ background: ev.color }}></span>
-                  {ev.title}
-                </div>
-                <div className="text-xs text-gray-600">
-                  <div><b>Time:</b> {ev.time}</div>
-                  {ev.description && <div><b>Description:</b> {ev.description}</div>}
-                  <div><b>Recurrence:</b> {ev.recurrence}</div>
-                </div>
-                <div className="flex gap-2 justify-end mt-2">
-                  <button className="px-2 py-1 bg-blue-500 text-white rounded text-xs" onClick={() => onEdit(ev)}>Edit</button>
-                  <button className="px-2 py-1 bg-red-500 text-white rounded text-xs" onClick={() => onDelete(ev)}>Delete</button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2 justify-end mt-4">
-            <button className="px-4 py-2 bg-gray-200 rounded" onClick={onClose}>Close</button>
-          </div>
-        </div>
-      </div>
-    );
+  if (!event) return null
+
+  const handleDelete = () => {
+    dispatch({ type: "DELETE_EVENT", id: event.id })
+    onClose()
   }
 
-  // Single event as before
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white p-4 sm:p-6 rounded shadow-lg w-full max-w-xs sm:max-w-sm mx-2">
-        <div className="mb-4 font-semibold flex items-center gap-2">
-          <span className="inline-block w-3 h-3 rounded-full" style={{ background: event.color }}></span>
-          {event.title}
-        </div>
-        <div className="mb-2 text-sm text-gray-600">
-          <div><b>Date:</b> {event.date ? format(new Date(event.date), 'PPP') : ''}</div>
-          <div><b>Time:</b> {event.time}</div>
-          {event.description && <div className="mt-2"><b>Description:</b> {event.description}</div>}
-          <div className="mt-2"><b>Recurrence:</b> {event.recurrence}</div>
-        </div>
-        <div className="flex gap-2 justify-end mt-4">
-          <button className="px-4 py-2 bg-gray-200 rounded" onClick={onClose}>Close</button>
-          <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => onEdit(event)}>Edit</button>
-          <button className="px-4 py-2 bg-red-500 text-white rounded" onClick={() => onDelete(event)}>Delete</button>
-        </div>
-      </div>
-    </div>
-  );
-};
+  const handleEdit = () => {
+    onEdit(event)
+    onClose()
+  }
 
-export default EventDetailsModal; 
+  const getRecurrenceText = () => {
+    if (!event.recurrence || event.recurrence.type === "none") return "No repeat"
+    const { type, interval = 1 } = event.recurrence
+    const intervalText = interval > 1 ? ` every ${interval}` : ""
+    return `Repeats ${intervalText} ${type.slice(0,-2)}${interval > 1 ? "s" : ""}`
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-white/95 backdrop-blur-md border-blue-100 text-blue-900 max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-purple-600 bg-clip-text text-transparent">
+            Event Details
+          </DialogTitle>
+        </DialogHeader>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-xl font-semibold text-blue-900 mb-2">{event.title}</h3>
+              {event.description && <p className="text-blue-700/90 text-sm">{event.description}</p>}
+            </div>
+            <div className="w-4 h-4 rounded-full ml-4" style={{ backgroundColor: event.color }} />
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center text-blue-800">
+              <CalendarIcon className="h-5 w-5 mr-3 text-blue-500" />
+              <span>{format(parse(event.date, "dd-MM-yyyy", new Date()), "EEEE, MMMM d, yyyy")}</span>
+            </div>
+            <div className="flex items-center text-blue-800">
+              <Clock className="h-5 w-5 mr-3 text-blue-500" />
+              <span>{event.time}</span>
+            </div>
+             {event.category && <div className="flex items-center text-blue-800">
+              <Tag className="h-5 w-5 mr-3 text-blue-500" />
+              <span>{event.category}</span>
+            </div>}
+            <div className="flex items-center text-blue-800">
+              <Repeat className="h-5 w-5 mr-3 text-blue-500" />
+              <span>{getRecurrenceText()}</span>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t border-blue-100">
+            <Button onClick={handleEdit} variant="ghost" className="text-blue-800 hover:bg-blue-100">
+              <Edit className="h-4 w-4 mr-2" /> Edit
+            </Button>
+            <Button onClick={handleDelete} variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-100/50">
+              <Trash2 className="h-4 w-4 mr-2" /> Delete
+            </Button>
+          </div>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
+  )
+} 
