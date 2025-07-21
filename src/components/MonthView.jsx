@@ -62,7 +62,7 @@ const MonthView = ({ currentMonth, events, onDayClick, onEditEvent, onViewEvent,
               </AnimatePresence>
               {dayEvents.length > 2 && (
                 <div className="text-xs text-blue-600 text-center py-0.5">
-                  +{dayEvents.length - 2} more
+                  +{dayEvents.length - 2} aur
                 </div>
               )}
             </div>

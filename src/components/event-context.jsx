@@ -3,15 +3,14 @@
 import React, { createContext, useContext, useReducer, useEffect } from "react"
 import { format, parse, addDays, addWeeks, addMonths } from "date-fns"
 
-// State and Action Types (JS only)
-// Initial State
+// Sab events aur state yahan
 const initialState = {
   events: [],
   selectedDate: new Date(),
   currentMonth: new Date(),
 }
 
-// Reducer
+// State update karne ka logic
 function eventReducer(state, action) {
   switch (action.type) {
     case "ADD_EVENT":
@@ -37,14 +36,13 @@ function eventReducer(state, action) {
   }
 }
 
-// Context
 const EventContext = createContext(null)
 
-// Provider
+// Poore app ko state yahan se milta hai
 export function EventProvider({ children }) {
   const [state, dispatch] = useReducer(eventReducer, initialState)
 
-  // Load from localStorage on mount
+  // App load hone par localStorage se events nikalna
   useEffect(() => {
     const savedEvents = localStorage.getItem("schedulo_events")
     if (savedEvents) {
@@ -52,12 +50,12 @@ export function EventProvider({ children }) {
         const events = JSON.parse(savedEvents)
         dispatch({ type: "LOAD_EVENTS", events })
       } catch (error) {
-        console.error("Failed to load events:", error)
+        console.error("Events load nahi hue:", error)
       }
     }
   }, [])
 
-  // Save to localStorage on change
+  // Jab bhi events change ho, localStorage me save ho jaaaye
   useEffect(() => {
     localStorage.setItem("schedulo_events", JSON.stringify(state.events))
   }, [state.events])
@@ -69,11 +67,11 @@ export function EventProvider({ children }) {
   )
 }
 
-// Custom Hook
+// Context use karne ke liye simple hook
 export function useEvents() {
   const context = useContext(EventContext)
   if (!context) {
-    throw new Error("useEvents must be used within an EventProvider")
+    throw new Error("useEvents ko EventProvider ke andar hi use karein")
   }
   return context
 } 

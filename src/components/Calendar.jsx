@@ -27,8 +27,8 @@ const Calendar = () => {
   });
 
   const expandRecurringEvents = (eventsToExpand, month) => {
-    // ... expansion logic ...
-    return eventsToExpand; // simplified for brevity
+    // Yahan recurring events ko expand karne ka logic 
+    return eventsToExpand;
   };
 
   const handleDayClick = (date) => {
@@ -93,7 +93,7 @@ const Calendar = () => {
            </Button>
         </div>
         <div className="flex items-center gap-2">
-            {/* View toggler can go here */}
+            {/* View change karne ka button  */}
         </div>
       </div>
 
