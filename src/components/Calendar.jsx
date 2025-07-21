@@ -195,72 +195,84 @@ const Calendar = () => {
   );
 
   return (
-    <div className="w-full h-full">
-      {/* Header with gradient title and subtitle */}
+    <div className="w-full h-full bg-blue-50">
+      {/* Header with gradient or dark text and subtitle */}
       <div className="flex flex-col items-center mb-8 w-full">
-        <h1 className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent drop-shadow-lg tracking-tight mb-2">
+        <h1 className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-blue-700 via-purple-600 to-blue-900 bg-clip-text text-transparent drop-shadow-lg tracking-tight mb-2">
           Event Calendar
         </h1>
-        <p className="text-lg text-blue-700/80 font-medium mb-4">Manage your schedule with style</p>
+        <p className="text-lg text-blue-700 font-medium mb-4">Manage your schedule with style</p>
         <div className="w-full flex justify-center">
           <input
             type="text"
             placeholder="Search events..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full max-w-md bg-white/10 border border-blue-100 rounded-lg px-4 py-2 text-blue-700 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+            className="w-full max-w-md bg-white border border-blue-200 rounded-lg px-4 py-2 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition shadow-sm"
           />
         </div>
       </div>
       {/* Calendar container */}
-      <div className="w-full bg-white/70 rounded-2xl shadow-xl border border-blue-100 p-4 sm:p-8">
+      <div className="w-full bg-white/90 rounded-2xl shadow-xl border border-blue-100 p-4 sm:p-8">
         <div className="flex items-center justify-between mb-4 w-full">
           <button
-            className="px-3 py-2 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 text-white shadow hover:scale-105 transition"
+            className="px-3 py-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-300 text-white shadow hover:scale-105 transition"
             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
           >
             &#8592;
           </button>
-          <div className="font-extrabold text-2xl sm:text-3xl text-blue-700 tracking-wide drop-shadow">
+          <div className="font-extrabold text-2xl sm:text-3xl text-blue-900 tracking-wide drop-shadow">
             {format(currentMonth, 'MMMM yyyy')}
           </div>
           <button
-            className="px-3 py-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 text-white shadow hover:scale-105 transition"
+            className="px-3 py-2 rounded-full bg-gradient-to-r from-purple-300 to-blue-400 text-white shadow hover:scale-105 transition"
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
           >
             &#8594;
           </button>
           <button
-            className="ml-4 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-400 to-purple-400 text-white font-semibold shadow-lg hover:scale-105 transition flex items-center gap-2"
+            className="ml-4 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-400 to-purple-300 text-white font-semibold shadow-lg hover:scale-105 transition flex items-center gap-2"
             onClick={() => { setIsModalOpen(true); setSelectedDate(new Date()); setEditMode(false); setSelectedEvent(null); }}
           >
             <span className="text-xl font-bold">+</span> Add Event
           </button>
         </div>
         {/* Search and filter UI */}
-        <div className="flex flex-col sm:flex-row gap-2 mb-4 items-center">
+        <div className="flex flex-col sm:flex-row gap-2 mb-4 items-center w-full">
           <select
             value={colorFilter}
             onChange={e => setColorFilter(e.target.value)}
-            className="border rounded px-2 py-1"
+            className="border border-blue-200 rounded-lg px-3 py-2 text-blue-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-sm"
+            style={{ minWidth: 120 }}
           >
             <option value="">All Colors</option>
             {eventColors.map(color => (
-              <option key={color} value={color} style={{ color }}>{color}</option>
+              <option key={color} value={color}>
+                {color}
+              </option>
             ))}
           </select>
-          <button
-            className={`px-3 py-1 rounded border ${viewType === 'month' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-            onClick={() => setViewType('month')}
-          >
-            Monthly
-          </button>
-          <button
-            className={`px-3 py-1 rounded border ${viewType === 'week' ? 'bg-blue-500 text-white' : 'bg-white'}`}
-            onClick={() => setViewType('week')}
-          >
-            Weekly
-          </button>
+          {/* Show color swatches below filter for clarity */}
+          <div className="flex gap-2 items-center">
+            <span className="text-xs text-blue-700">Filter:</span>
+            <button
+              className={`w-6 h-6 rounded-full border-2 border-blue-200 flex items-center justify-center ${!colorFilter ? 'ring-2 ring-blue-400' : ''}`}
+              style={{ background: 'linear-gradient(90deg, #3b82f6 0%, #a78bfa 100%)' }}
+              onClick={() => setColorFilter('')}
+              title="All Colors"
+            >
+              <span className="text-xs text-white font-bold">All</span>
+            </button>
+            {eventColors.map(color => (
+              <button
+                key={color}
+                className={`w-6 h-6 rounded-full border-2 border-blue-200 flex items-center justify-center ${colorFilter === color ? 'ring-2 ring-blue-400' : ''}`}
+                style={{ background: color }}
+                onClick={() => setColorFilter(color)}
+                title={color}
+              />
+            ))}
+          </div>
         </div>
         {renderHeader()}
         {viewType === 'month' ? (
@@ -270,6 +282,8 @@ const Calendar = () => {
             onDayClick={handleDayClick}
             onEventClick={handleEventClick}
             onEventDrop={handleEventDrop}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
           />
         ) : (
           <WeekView

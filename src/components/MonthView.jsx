@@ -23,7 +23,33 @@ const DraggableEventDot = ({ event, onEventClick }) => {
   );
 };
 
-const MonthView = ({ currentMonth, events, onDayClick, onEventClick, onEventDrop }) => {
+const EventCard = ({ event, onEdit, onDelete }) => (
+  <div
+    className="w-full flex items-center justify-between bg-white/80 border rounded-lg px-2 py-1 mb-1 shadow-sm cursor-pointer hover:bg-white"
+    style={{ borderColor: event.color, borderWidth: 2, minWidth: 0 }}
+    onClick={onEdit}
+    title={event.title}
+  >
+    <div className="flex-1 min-w-0">
+      <div className="font-semibold text-xs text-ellipsis overflow-hidden whitespace-nowrap" style={{ color: event.color }}>
+        {event.title}
+      </div>
+      <div className="flex items-center gap-1 text-xs text-blue-500 mt-0.5">
+        <span role="img" aria-label="clock">🕒</span>
+        {event.time}
+      </div>
+    </div>
+    <button
+      className="ml-2 text-xs text-red-400 hover:text-red-600 px-1 py-0.5 rounded focus:outline-none"
+      onClick={e => { e.stopPropagation(); onDelete(); }}
+      title="Delete event"
+    >
+      ×
+    </button>
+  </div>
+);
+
+const MonthView = ({ currentMonth, events, onDayClick, onEventClick, onEventDrop, onEditEvent, onDeleteEvent }) => {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
@@ -67,24 +93,26 @@ const MonthView = ({ currentMonth, events, onDayClick, onEventClick, onEventDrop
         <div
           key={day}
           ref={drop}
-          className={`h-20 sm:h-24 flex flex-col items-center justify-start border border-blue-100 rounded-xl bg-white/70 shadow-sm cursor-pointer select-none transition-all duration-200 mt-1 pt-2
+          className={`h-12 sm:h-16 flex flex-col items-center justify-start border border-blue-100 rounded-xl bg-white/90 shadow-sm cursor-pointer select-none transition-all duration-200 pt-1
             text-xs sm:text-base
-            ${isCurrentMonth ? 'text-blue-700' : 'bg-blue-50/80 text-blue-300'}
-            ${isToday ? 'border-2 border-blue-400 ring-2 ring-blue-300' : ''}
+            ${isCurrentMonth ? 'text-blue-900' : 'bg-blue-50/80 text-blue-300'}
+            ${isToday ? 'border-2 border-blue-400 ring-2 ring-blue-200' : ''}
             ${isOver && canDrop ? 'ring-2 ring-blue-300' : ''}
             hover:scale-105 hover:ring-2 hover:ring-blue-200
           `}
-          onClick={() => dayEvents.length > 0 ? onEventClick(day, dayEvents) : onDayClick(day)}
+          onClick={() => onDayClick(day)}
         >
-          <span className="font-bold mb-1 drop-shadow-sm">{formattedDate}</span>
+          <span className="font-bold mb-0 drop-shadow-sm">{formattedDate}</span>
           {dayEvents.length > 0 && (
-            <div className="flex gap-1 mt-1 flex-wrap justify-center items-center">
-              {dayEvents.slice(0, 3).map((ev, idx) => (
-                <span key={ev.id} className="w-3 h-3 rounded-full border-2 border-white/80 shadow-sm" style={{ background: ev.color, opacity: 0.7 }}></span>
+            <div className="flex flex-col w-full mt-1 gap-1">
+              {dayEvents.map(ev => (
+                <EventCard
+                  key={ev.id}
+                  event={ev}
+                  onEdit={() => onEditEvent(ev)}
+                  onDelete={() => onDeleteEvent(ev)}
+                />
               ))}
-              {dayEvents.length > 3 && (
-                <span className="text-xs text-blue-400 ml-1">+{dayEvents.length - 3}</span>
-              )}
             </div>
           )}
         </div>
@@ -92,7 +120,7 @@ const MonthView = ({ currentMonth, events, onDayClick, onEventClick, onEventDrop
       day = addDays(day, 1);
     }
     rows.push(
-      <div className="grid grid-cols-7 gap-2 sm:gap-4 mb-2 sm:mb-3" key={day}>
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-1 sm:mb-2" key={day}>
         {days}
       </div>
     );

@@ -10,6 +10,11 @@ const defaultForm = (selectedDate) => ({
   color: '#3b82f6',
 });
 
+function getCurrentTimeHHMM() {
+  const now = new Date();
+  return now.toTimeString().slice(0, 5);
+}
+
 const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error }) => {
   const [form, setForm] = useState(selectedEvent ? selectedEvent : defaultForm(selectedDate));
   const [customRecurrence, setCustomRecurrence] = useState({ interval: 1, unit: 'days' });
@@ -26,7 +31,10 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
         setCustomRecurrence({ interval: 1, unit: 'days' });
       }
     } else {
-      setForm(defaultForm(selectedDate));
+      const f = defaultForm(selectedDate);
+      // Set current time if time is blank
+      f.time = getCurrentTimeHHMM();
+      setForm(f);
       setCustomRecurrence({ interval: 1, unit: 'days' });
     }
   }, [selectedDate, open, selectedEvent]);
@@ -54,9 +62,9 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white p-4 sm:p-6 rounded shadow-lg w-full max-w-xs sm:max-w-sm mx-2">
-        <div className="mb-4 font-semibold">{selectedEvent ? 'Edit Event' : `Add Event for ${selectedDate ? format(selectedDate, 'PPP') : ''}`}</div>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-xl border border-blue-100 w-full max-w-md mx-2 p-6">
+        <div className="mb-4 font-semibold text-blue-900 text-lg">{selectedEvent ? 'Edit Event' : `Add Event for ${selectedDate ? format(selectedDate, 'PPP') : ''}`}</div>
         {error && <div className="mb-2 text-red-600 text-sm font-medium">{error}</div>}
         <form onSubmit={handleFormSubmit} className="space-y-3">
           <input
@@ -65,7 +73,7 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
             value={form.title}
             onChange={handleInputChange}
             placeholder="Event Title"
-            className="w-full border rounded px-2 py-1"
+            className="w-full bg-blue-50 border border-blue-200 rounded px-2 py-2 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
             required
           />
           <div className="flex gap-2">
@@ -74,7 +82,7 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
               name="date"
               value={form.date}
               onChange={handleInputChange}
-              className="border rounded px-2 py-1 flex-1"
+              className="bg-blue-50 border border-blue-200 rounded px-2 py-2 flex-1 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
               required
             />
             <input
@@ -82,7 +90,7 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
               name="time"
               value={form.time}
               onChange={handleInputChange}
-              className="border rounded px-2 py-1 flex-1"
+              className="bg-blue-50 border border-blue-200 rounded px-2 py-2 flex-1 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
               required
             />
           </div>
@@ -91,15 +99,15 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
             value={form.description}
             onChange={handleInputChange}
             placeholder="Description"
-            className="w-full border rounded px-2 py-1"
+            className="w-full bg-blue-50 border border-blue-200 rounded px-2 py-2 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
           <div className="flex gap-2 items-center">
-            <label className="text-sm">Recurrence:</label>
+            <label className="text-sm text-blue-900">Recurrence:</label>
             <select
               name="recurrence"
               value={form.recurrence}
               onChange={handleInputChange}
-              className="border rounded px-2 py-1"
+              className="bg-blue-50 border border-blue-200 rounded px-2 py-2 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
             >
               <option value="none">None</option>
               <option value="daily">Daily</option>
@@ -110,21 +118,21 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
           </div>
           {form.recurrence === 'custom' && (
             <div className="flex gap-2 items-center">
-              <label className="text-sm">Every</label>
+              <label className="text-sm text-blue-900">Every</label>
               <input
                 type="number"
                 name="interval"
                 min="1"
                 value={customRecurrence.interval}
                 onChange={handleCustomRecurrenceChange}
-                className="border rounded px-2 py-1 w-16"
+                className="bg-blue-50 border border-blue-200 rounded px-2 py-2 w-16 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 required
               />
               <select
                 name="unit"
                 value={customRecurrence.unit}
                 onChange={handleCustomRecurrenceChange}
-                className="border rounded px-2 py-1"
+                className="bg-blue-50 border border-blue-200 rounded px-2 py-2 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
               >
                 <option value="days">days</option>
                 <option value="weeks">weeks</option>
@@ -133,7 +141,7 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
             </div>
           )}
           <div className="flex gap-2 items-center">
-            <label className="text-sm">Color:</label>
+            <label className="text-sm text-blue-900">Color:</label>
             <input
               type="color"
               name="color"
@@ -142,11 +150,11 @@ const EventModal = ({ open, onClose, onSave, selectedDate, selectedEvent, error 
               className="w-8 h-8 p-0 border-none bg-transparent"
             />
           </div>
-          <div className="flex gap-2 justify-end">
-            <button type="button" className="px-4 py-2 bg-gray-200 rounded" onClick={onClose}>
+          <div className="flex gap-2 justify-end mt-4">
+            <button type="button" className="px-4 py-2 bg-blue-100 text-blue-900 rounded shadow hover:bg-blue-200" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
+            <button type="submit" className="px-4 py-2 bg-gradient-to-r from-blue-400 to-purple-300 text-white rounded shadow hover:scale-105 transition">
               Save
             </button>
           </div>
